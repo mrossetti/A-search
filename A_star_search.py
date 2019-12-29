@@ -180,7 +180,7 @@ class Visualizer:
         self.goal = goal
         self.wall = wall
 
-    def A_star_solve(self):
+    def A_star_search(self):
         self.path = self.A_star.search(self.start, self.goal)
 
     @staticmethod
@@ -246,7 +246,7 @@ def main():
     # gui
     gui = Graphics()
     src = Visualizer(array, start, goal, wall)
-    src.A_star_solve()
+    src.A_star_search()
     gui.run(src)
 
 

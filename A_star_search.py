@@ -43,13 +43,14 @@ class A_star:
     A* search prioritizes the node with the lowest g + h score. The following
     implementation uses the manhattan distance to calculate the heuristic h.
     """
-    def __init__(self, arr, wall=True):
-        rows, cols = arr.shape
-        arr_node = np.empty((rows, cols), dtype=object)
+    def __init__(self, array, wall=True):
+        # parse the array and build an array of node objects
+        rows, cols = array.shape
+        node = np.empty((rows, cols), dtype=object)
         for x, y in product(range(cols), range(rows)):
-            arr_node[y, x] = Node(x, y, arr[y, x])
-        self.node = arr_node
-        self.wall = wall
+            node[y, x] = Node(x, y, array[y, x])
+        self.node = node  # array of nodes
+        self.wall = wall  # wall identifier
 
     @staticmethod
     def manhattan(node, goal):
@@ -91,7 +92,8 @@ class A_star:
             # interrupt after max_iteration
             iteration += 1
             if iteration > max_iteration:
-                raise ValueError('Something went wrong!')
+                print('No path found')
+                break
             # which node is explored first? the one that minimizes g + h
             current = min(openset, key=lambda node: node.g + node.h)
             # if goal reached: A* found a solution
@@ -124,7 +126,6 @@ class A_star:
                     node.h = h(node, goal)
                     openset.add(node)
         # no path from start to goal found
-        raise ValueError('No path found')
 
 
 class Graphics:
@@ -136,34 +137,33 @@ class Graphics:
 
     def __init__(self, **config):
         # config
-        wsize = config.get('window_size', (640, 640))
-        bgcol = config.get('bg_color', (255,255,255))
-        fps   = config.get('fps', 16)
-        wbu   = config.get('wait_between_updates', 0.0)
+        self.wsize = config.get('window_size', (640, 640))
+        self.bgcol = config.get('bg_color', (255,255,255))
+        self.fps   = config.get('fps', 16)
+        self.wait  = config.get('wait_between_updates', 0.0)
         # setup
         self.display = pygame.display.set_mode(wsize)
-        self.bgcol   = bgcol
-        self.fps     = fps
-        self.wbu     = wbu
-
+        
     def run(self, src):
+        # run graphics from source 'src'
+        # src must have .update() and .draw() methods
         clock = pygame.time.Clock()
-        wait = 0.0
+        pause = 0.0
         running = True
 
         while running:
             self.display.fill(self.bgcol)
             src.draw(self.display)
-            if wait > self.wbu:  # wait between upds
+            if pause > self.wait:  # wait between upds
                 src.update()
-                wait = 0.0
+                pause = 0.0
             pygame.display.update()
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     running = False
             ms_elapsed = clock.tick(self.fps)
-            wait += ms_elapsed
+            pause += ms_elapsed
 
 
 class Visualizer:
@@ -173,28 +173,28 @@ class Visualizer:
               'goal' : (255,   0,   0),  # purple
               'grid' : (127, 127, 127)}  # gray
 
-    def __init__(self, array, start, goal, wall=True):
+    def __init__(self, array, wall=True):
         self.array = array
-        self.A_star = A_star(array, wall)
-        self.start = start
-        self.goal = goal
         self.wall = wall
+        self.A_star = A_star(array, wall)
 
-    def A_star_search(self):
-        self.path = self.A_star.search(self.start, self.goal)
+    def A_star_search(self, start, goal):
+        self.start, self.goal = start, goal
+        self.path = self.A_star.search(start, goal)
 
     @staticmethod
-    def show_array(array, start, goal, wall=True):
+    def print_array(array, start, goal, wall=True):
         res = np.full(array.shape, '.')
         res[array == wall] = '#'
         res[start[1], start[0]] = 'S'
-        res[ goal[1], goal[0] ] = 'G'
+        res[goal[1], goal[0]] = 'G'
         for i in range(array.shape[0]):
             for j in range(array.shape[1]):
                 print(res[i, j], end=' ')
             print()  # \n
 
     def draw(self, dst):
+        # draw on destination surface 'dst'
         rows, cols = self.array.shape
         width, height = dst.get_size()
         cw, ch = width//cols, height//rows
@@ -225,6 +225,7 @@ class Visualizer:
             pygame.draw.line(dst, self.colors['grid'], (0, y), (width, y))
 
     def update(self):
+        # For future animations where you change 'start' and 'goal'
         pass
 
 
@@ -242,11 +243,11 @@ def main():
     for slice in slices:
         array[slice].fill(wall)
     # cli
-    Visualizer.show_array(array, start, goal, wall)
+    Visualizer.print_array(array, start, goal, wall)
     # gui
     gui = Graphics()
-    src = Visualizer(array, start, goal, wall)
-    src.A_star_search()
+    src = Visualizer(array, wall)
+    src.A_star_search(start, goal)
     gui.run(src)
 
 

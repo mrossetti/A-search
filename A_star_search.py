@@ -142,7 +142,7 @@ class Graphics:
         self.fps   = config.get('fps', 16)
         self.wait  = config.get('wait_between_updates', 0.0)
         # setup
-        self.display = pygame.display.set_mode(wsize)
+        self.display = pygame.display.set_mode(self.wsize)
         
     def run(self, src):
         # run graphics from source 'src'
@@ -225,7 +225,7 @@ class Visualizer:
             pygame.draw.line(dst, self.colors['grid'], (0, y), (width, y))
 
     def update(self):
-        # For future animations where you change 'start' and 'goal'
+        # Here you can recalculate the search with different 'start' and 'goal'
         pass
 
 

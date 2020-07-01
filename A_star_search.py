@@ -6,8 +6,11 @@ import ctypes
 
 
 class Node:
-    """Some operator overloading was done mainly to work with sets and built-in
-       functions / operators simplfying syntax and readability."""
+    """
+    Some operator overloading was done mainly to work with sets and built-in
+    functions simplifying syntax and readability.
+    """
+    
     def __init__(self, x, y, value):
         self.x = x  # node column (j)
         self.y = y  # node row (i)
@@ -20,13 +23,13 @@ class Node:
         return (self.x, self.y)[idx]
 
     def __hash__(self):
-        return hash(tuple(self))
+        return hash((self.x, self.y))
 
     def __eq__(self, other):
         if hasattr(other, '__getitem__'):
             if (self.x == other[0] and self.y == other[1]):
                 return True
-        return False
+        return NotImplemented
 
     def __repr__(self):
         return 'Node({})'.format(self.value)
@@ -43,6 +46,7 @@ class A_star:
     A* search prioritizes the node with the lowest g + h score. The following
     implementation uses the manhattan distance to calculate the heuristic h.
     """
+    
     def __init__(self, array, wall=True):
         # parse the array and build an array of node objects
         rows, cols = array.shape
@@ -129,6 +133,7 @@ class A_star:
 
 
 class Graphics:
+    
     def __new__(cls, *args, **kwargs):
         # before instantiation
         pygame.init()
@@ -167,6 +172,7 @@ class Graphics:
 
 
 class Visualizer:
+    
     colors = {'empty': (255, 255, 255),  # white
               'wall' : (  0,   0,   0),  # black
               'start': (255, 255,   0),  # red
